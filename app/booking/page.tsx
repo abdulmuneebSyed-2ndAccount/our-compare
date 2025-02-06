@@ -6,9 +6,29 @@ import SearchBar from "@/components/SearchBar";
 import VehicleSelection from "@/components/vehicleselection";
 import BookingForm from "@/components/BookingForm";
 import ConfirmationModal from "@/components/ConfirmationModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+    const [auth,setauth] = useState(false);
+    const Router = useRouter();
+    useEffect(() => {
+        const savedState = localStorage.getItem("writtenState");
+        if (savedState) {
+            const authCheck = JSON.parse(savedState);
+            if (authCheck.rapido ==true && authCheck.ola ==true && authCheck.uber ==true) {
+                setauth(true);
+            }
+            else {
+                setauth(false);
+                Router.push("/unauthorzed-entry=true+send+back");
+                localStorage.removeItem("writtenState");
+            }
+        }
+        else {
+            Router.push("/unauthorzed-entry=true+send+back");
+        }
+    },[]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [locations, setLocations] = useState({
@@ -29,7 +49,7 @@ export default function Home() {
       [type]: coords,
     }));
   };
-
+  
   const handleBooking = async () => {
     const bookingDetails = {
       vehicle: selectedVehicle,
@@ -57,7 +77,7 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen relative">
+    auth && <main className="flex min-h-screen relative">
       <div className="absolute inset-0">
         <Map
           onLocationUpdate={handleLocationUpdate}
